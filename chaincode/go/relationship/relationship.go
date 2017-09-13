@@ -49,13 +49,22 @@ func (t *RelationshipChaincode) order(stub shim.ChaincodeStubInterface, args []s
 
 	var err error
 
-	if len(args) != 5 {
+	if len(args) != 6 {
 		return pb.Response{Status:400, Message:"incorrect number of arguments"}
 	}
 
-	buyer := getCreatorOrganization(stub)
+	if args[0] == "buy" 
+	{
+		buyer := getCreatorOrganization(stub)
+		seller := args[1]
+	}
+	else if args[0] == "sell"
+	{
+		seller := getCreatorOrganization(stub)
+		buyer:= args[1]
+	}
 
-	seller := args[0]
+	
 	asset := args[1]
 	qty := args[2]
 	price := args[3]
@@ -81,7 +90,33 @@ func (t *RelationshipChaincode) order(stub shim.ChaincodeStubInterface, args []s
 	var status = []byte("initiated")
 
 	if data != nil {
-		status = []byte("matched")
+        chainCodeToCall := "SimpleChaincode"
+        if args[0] == "buy"
+        	queryKey := "a"
+        else
+        	queryKey := "b"
+        channel := "reference"
+        f := "query"
+        invokeArgs := util.ToChaincodeArgs(f, queryKey)
+        response := stub.InvokeChaincode(chainCodeToCall, invokeArgs, channel)
+        if response.Status != shim.OK {
+                errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", err.Error())
+                fmt.Printf(errStr)
+                return shim.Error(errStr)
+        }
+        jsonResp = string(response.Payload)
+		var res 
+		json.Unmarshal(jsonResp, &res)
+		fmt.Println(res)
+		if args[0] == "buy"
+        	fmt.Println("Retrieved A" + res.a)
+        else
+        	fmt.Println("Retrieved B" + res.b)
+
+        if args[0] == "buy" && res.a != nil
+			status = []byte("matched")
+		else if args[0] == "sell" && res.b != nil
+			status = []byte("matched")
 	}
 
 	logger.Debug("status", status)

@@ -497,7 +497,7 @@ function devInstantiate () {
 }
 
 function devInvoke () {
-  docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n mycc -v 0 -C myc -c '{\"Args\":[\"order\",\"b\",\"radish\",\"1\",\"10\",\"ref1\"]}'"
+  docker-compose -f ${COMPOSE_FILE_DEV} run cli bash -c "peer chaincode invoke -n mycc -v 0 -C myc -c '{\"Args\":[\"order\",\"b.example.com\",\"radish\",\"1\",\"10\",\"ref1\"]}'"
 }
 
 function devQuery () {

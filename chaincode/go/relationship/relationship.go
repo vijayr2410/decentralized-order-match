@@ -17,13 +17,13 @@ var logger = shim.NewLogger("RelationshipChaincode")
 const orderIndex = "Order"
 
 type Order struct {
-	Buyer string `json:buyer`
-	Seller string `json:seller`
-	Asset string `json:asset`
-	Qty string `json:qty`
-	Price string `json:price`
-	Reference string `json:reference`
-	Status string `json:status`
+	Buyer string `json:"buyer"`
+	Seller string `json:"seller"`
+	Asset string `json:"asset"`
+	Qty string `json:"qty"`
+	Price string `json:"price"`
+	Reference string `json:"reference"`
+	Status string `json:"status"`
 }
 
 type RelationshipChaincode struct {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/hyperledger/fabric/common/util"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"strings"
 	"encoding/pem"
@@ -24,6 +25,11 @@ type Order struct {
 	Price string `json:"price"`
 	Reference string `json:"reference"`
 	Status string `json:"status"`
+}
+
+type ReferenceResponse struct {
+	Name string
+	Amount string
 }
 
 type RelationshipChaincode struct {
@@ -53,18 +59,16 @@ func (t *RelationshipChaincode) order(stub shim.ChaincodeStubInterface, args []s
 		return pb.Response{Status:400, Message:"incorrect number of arguments"}
 	}
 
-	if args[0] == "buy" 
-	{
-		buyer := getCreatorOrganization(stub)
-		seller := args[1]
-	}
-	else if args[0] == "sell"
-	{
-		seller := getCreatorOrganization(stub)
-		buyer:= args[1]
+	var buyer string
+	var seller string
+	if args[0] == "buy" {
+		buyer = getCreatorOrganization(stub)
+		seller = args[1]
+	} else if args[0] == "sell" {
+		seller = getCreatorOrganization(stub)
+		buyer = args[1]
 	}
 
-	
 	asset := args[1]
 	qty := args[2]
 	price := args[3]
@@ -90,11 +94,15 @@ func (t *RelationshipChaincode) order(stub shim.ChaincodeStubInterface, args []s
 	var status = []byte("initiated")
 
 	if data != nil {
-        chainCodeToCall := "SimpleChaincode"
-        if args[0] == "buy"
-        	queryKey := "a"
-        else
-        	queryKey := "b"
+        chainCodeToCall := "reference"
+
+		var queryKey string
+
+        if args[0] == "buy" {
+			queryKey = "a"
+		} else {
+			queryKey = "b"
+		}
         channel := "reference"
         f := "query"
         invokeArgs := util.ToChaincodeArgs(f, queryKey)
@@ -104,19 +112,20 @@ func (t *RelationshipChaincode) order(stub shim.ChaincodeStubInterface, args []s
                 fmt.Printf(errStr)
                 return shim.Error(errStr)
         }
-        jsonResp = string(response.Payload)
-		var res 
-		json.Unmarshal(jsonResp, &res)
+		var res ReferenceResponse
+		json.Unmarshal(response.Payload, &res)
 		fmt.Println(res)
-		if args[0] == "buy"
-        	fmt.Println("Retrieved A" + res.a)
-        else
-        	fmt.Println("Retrieved B" + res.b)
+		if args[0] == "buy" {
+			fmt.Println("Retrieved A" + res.Amount)
+		} else {
+			fmt.Println("Retrieved B" + res.Amount)
+		}
 
-        if args[0] == "buy" && res.a != nil
+        if args[0] == "buy" && res.Amount != "" {
 			status = []byte("matched")
-		else if args[0] == "sell" && res.b != nil
+		} else if args[0] == "sell" && res.Amount != "" {
 			status = []byte("matched")
+		}
 	}
 
 	logger.Debug("status", status)

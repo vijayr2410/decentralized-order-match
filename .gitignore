@@ -20,3 +20,6 @@ build
 /fabric-starter.iml
 /ledger/docker-compose-*.yaml
 /fabric-starter.iws
+/decentralized-order-match.ipr
+/decentralized-order-match.iml
+/decentralized-order-match.iws
